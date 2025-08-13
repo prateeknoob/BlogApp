@@ -7,10 +7,15 @@ import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -19,15 +24,20 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.blogapp.ui.theme.BlogAppTheme
@@ -41,7 +51,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Appsinmaking()
+            Derived()
         }
     }
 }
@@ -198,6 +208,7 @@ fun Appsinmaking() {
     }
 }
 
+//get view->observe layout->check insects->react->cleanup
 @Composable
 fun KeyboardComposable() {
     val view = LocalView.current
@@ -218,5 +229,65 @@ fun KeyboardComposable() {
         onDispose {
             view.viewTreeObserver.removeOnGlobalLayoutListener(listerner)
         }
+    }
+}
+
+
+//Produce State
+//To define state and to launch coroutine both in one step we use produce state
+//produces state and changes in that state are asynchronus
+@Composable
+fun Loader() {
+    val degree = produceState(0) {
+        while (true) {
+            delay(16)
+            value = (value + 10) % 360
+        }
+    }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize(1f),
+        content = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .rotate(degree.value.toFloat())
+                )
+                Text(text = "Loading")
+            }
+        }
+    )
+}
+
+
+//Derived_State_Of
+//if we have multiple state objects and we need to find state on that basis
+//then we use derived state of
+@Composable
+fun Derived() {
+    val table = remember { mutableStateOf(5) }
+    val index=produceState(1) {
+        repeat(9){
+            delay(1000)
+            value++
+        }
+    }
+    val message= derivedStateOf { //new state on the basis of existing state
+        "${table.value} * ${index.value} = ${table.value * index.value}"
+    }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize(1f)
+    ){
+        Text(text = message.value,
+            style = MaterialTheme.typography.displayLarge
+        )
     }
 }

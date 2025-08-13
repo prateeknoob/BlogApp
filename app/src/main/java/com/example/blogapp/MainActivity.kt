@@ -3,6 +3,7 @@ package com.example.blogapp
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,17 +15,24 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.example.blogapp.ui.theme.BlogAppTheme
 import com.google.firebase.annotations.concurrent.Background
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -33,7 +41,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AppTest()
+            Appsinmaking()
         }
     }
 }
@@ -173,5 +181,42 @@ fun LoadingScreen(onTimeout: () -> Unit) {
     LaunchedEffect(true) {
         delay(5000)
         currentOnTimeout()
+    }
+}
+
+
+//After using side effect when we need cleaner then we use
+//Disposable Effect
+
+@Composable
+fun Appsinmaking() {
+    Scaffold { paddingValues ->
+        Column(modifier = Modifier.padding(paddingValues)) {
+            KeyboardComposable()
+            TextField("", onValueChange = {})
+        }
+    }
+}
+
+@Composable
+fun KeyboardComposable() {
+    val view = LocalView.current
+    var lastKeyboardState by remember { mutableStateOf<Boolean?>(null) }
+
+    DisposableEffect(Unit) {
+        val listerner = ViewTreeObserver.OnGlobalLayoutListener {
+            val insect = ViewCompat.getRootWindowInsets(view)
+            val isKeyboardVisible = insect?.isVisible(WindowInsetsCompat.Type.ime()) ?: false
+
+            if (isKeyboardVisible != lastKeyboardState) {
+                lastKeyboardState = isKeyboardVisible
+                Log.d("PRATEEK", isKeyboardVisible.toString())
+            }
+        }
+        view.viewTreeObserver.addOnGlobalLayoutListener(listerner)
+
+        onDispose {
+            view.viewTreeObserver.removeOnGlobalLayoutListener(listerner)
+        }
     }
 }

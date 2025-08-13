@@ -75,7 +75,8 @@ fun Counter() {
     }
 }
 
-
+//RememberCouroutineScope is used to run the coroutine scope without any problem which we faced
+//while using LaunchedEffect
 @Composable
 fun CouroutineScopeComposable() {
     Scaffold { padding ->

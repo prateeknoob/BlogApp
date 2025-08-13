@@ -18,17 +18,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.blogapp.ui.theme.BlogAppTheme
 import com.google.firebase.annotations.concurrent.Background
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Counter()
+            CouroutineScopeComposable()
         }
     }
 }
@@ -55,8 +58,6 @@ fun App() {
 }
 
 
-
-
 //LaunchedEffect is used to run for 1 time or when the key is changed
 @Composable
 fun Counter() {
@@ -69,6 +70,41 @@ fun Counter() {
             }
             Button(onClick = { count.value++ }) {
                 Text(text = "Increment Value")
+            }
+        }
+    }
+}
+
+
+@Composable
+fun CouroutineScopeComposable() {
+    Scaffold { padding ->
+        Column(modifier = Modifier.padding(padding)) {
+
+            val counter = remember { mutableStateOf(0) }
+            var scope = rememberCoroutineScope()
+
+            var text = "Counter is running ${counter.value}"
+            if (counter.value == 10) {
+                text = "Counter Stopped"
+            }
+            Column {
+                Text(text = text)
+                Button(onClick = {
+                    scope.launch {
+                        Log.d("CouroutineScopeComposable", "Counter started...")
+                        try {
+                            for (i in 1..10) {
+                                counter.value++
+                                delay(1000)
+                            }
+                        } catch (e: Exception) {
+                            Log.d("CouroutineScopeComposable", "Exception-${e.message.toString()}")
+                        }
+                    }
+                }) {
+                    Text(text = "Start Counter")
+                }
             }
         }
     }

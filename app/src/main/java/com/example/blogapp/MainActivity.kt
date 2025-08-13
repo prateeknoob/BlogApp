@@ -1,6 +1,8 @@
 package com.example.blogapp
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -25,7 +28,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            App()
+            Counter()
         }
     }
 }
@@ -46,6 +49,26 @@ fun App() {
                 }) {
                     Text(text = "Change Theme")
                 }
+            }
+        }
+    }
+}
+
+
+
+
+//LaunchedEffect is used to run for 1 time or when the key is changed
+@Composable
+fun Counter() {
+    Scaffold { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            var count = remember { mutableStateOf(0) }
+            var key = count.value % 3 == 0
+            LaunchedEffect(key1 = key) {
+                Log.d("Counter", "Counter count: ${count.value}")
+            }
+            Button(onClick = { count.value++ }) {
+                Text(text = "Increment Value")
             }
         }
     }

@@ -16,9 +16,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.blogapp.ui.theme.BlogAppTheme
@@ -31,7 +33,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            CouroutineScopeComposable()
+            AppTest()
         }
     }
 }
@@ -75,6 +77,7 @@ fun Counter() {
     }
 }
 
+
 //RememberCouroutineScope is used to run the coroutine scope without any problem which we faced
 //while using LaunchedEffect
 @Composable
@@ -108,5 +111,67 @@ fun CouroutineScopeComposable() {
                 }
             }
         }
+    }
+}
+
+
+//RememberUpdatedState used for when we are running a heavy task and
+//we dont want that task to run again on recomposition
+//and my requirement is to get the updated state/value
+//without recomposition of overall task then i'll use
+//rememberupdatedstate composable- it'll always remember the updated state
+
+@Composable
+fun Apps() {
+    Scaffold { paddingValues ->
+        Column(modifier = Modifier.padding(paddingValues)) {
+            var counter = remember { mutableStateOf(0) }
+            LaunchedEffect(key1 = Unit) {
+                delay(2000)
+                counter.value = 10
+            }
+            Counterrr(counter.value)
+        }
+    }
+}
+
+@Composable
+fun Counterrr(value: Int) {
+    val state = rememberUpdatedState(newValue = value)
+    LaunchedEffect(key1 = Unit) {
+        delay(5000)
+        Log.d("PRATEEK", state.value.toString())
+    }
+    Text(text = value.toString())
+}
+
+
+fun a() {
+    Log.d("PRATEEK", "THIS IS APP A")
+}
+
+fun b() {
+    Log.d("PRATEEK", "THIS IS APP B")
+}
+
+@Composable
+fun AppTest() {
+    Scaffold { paddingValues ->
+        Column(modifier = Modifier.padding(paddingValues)) {
+            var state = remember { mutableStateOf(::a) }
+            Button(onClick = { state.value = ::b }) {
+                Text(text = "Change App")
+            }
+            LoadingScreen(state.value)
+        }
+    }
+}
+
+@Composable
+fun LoadingScreen(onTimeout: () -> Unit) {
+    val currentOnTimeout by rememberUpdatedState(onTimeout)
+    LaunchedEffect(true) {
+        delay(5000)
+        currentOnTimeout()
     }
 }
